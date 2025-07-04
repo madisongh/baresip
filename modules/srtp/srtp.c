@@ -399,13 +399,20 @@ static bool sdp_attr_handler(const char *name, const char *value, void *arg)
 	if (!cryptosuite_issupported(&c.suite))
 		return false;
 
-	/* receiving crypto-suite changed -> reset srtp_rx */
-	if (st->srtp_rx && pl_strcmp(&c.suite, st->crypto_suite)) {
-		info ("srtp (%s-rx): cipher suite changed from %s to %r\n",
+	/* receiving crypto-suite changed -> reset srtp_rx and srtp_tx */
+	if (pl_strcmp(&c.suite, st->crypto_suite)) {
+		info ("srtp (%s): cipher suite changed from %s to %r\n",
 			stream_name(st->strm), st->crypto_suite, &c.suite);
-		mtx_lock(st->mtx_rx);
-		st->srtp_rx = mem_deref(st->srtp_rx);
-		mtx_unlock(st->mtx_rx);
+		if (st->mtx_rx) {
+			mtx_lock(st->mtx_rx);
+			st->srtp_rx = mem_deref(st->srtp_rx);
+			mtx_unlock(st->mtx_rx);
+		}
+		if (st->mtx_tx) {
+			mtx_lock(st->mtx_tx);
+			st->srtp_tx = mem_deref(st->srtp_tx);
+			mtx_unlock(st->mtx_tx);
+		}
 	}
 
 	st->crypto_suite = mem_deref(st->crypto_suite);
