@@ -1206,9 +1206,14 @@ int ua_alloc(struct ua **uap, const char *aor)
 		goto out;
 
 
-	/* generate a unique contact-user, this is needed to route
+	/* If not marked as a singleton (for SIP servers that
+	   require the contact-user to match the username), generate
+	   a unique contact-user. This is needed to route
 	   incoming requests when using multiple useragents */
-	err = re_sdprintf(&ua->cuser, "%r-%p", &ua->acc->luri.user, ua);
+	if (ua->acc->singleton)
+		err = re_sdprintf(&ua->cuser, "%r", &ua->acc->luri.user);
+	else
+		err = re_sdprintf(&ua->cuser, "%r-%p", &ua->acc->luri.user, ua);
 	if (err)
 		goto out;
 

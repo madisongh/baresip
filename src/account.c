@@ -582,6 +582,7 @@ static int encode_uri_user(struct re_printf *pf, const struct uri *uri)
 int account_alloc(struct account **accp, const char *sipaddr)
 {
 	struct account *acc;
+	struct ua *ua;
 	struct pl pl;
 	int err = 0;
 
@@ -612,6 +613,13 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	if (err)
 		goto out;
 
+	ua = uag_find_aor(acc->aor);
+	/* Singleton accounts may only be used in one UA */
+	if (ua && ua_account(ua) && ua_account(ua)->singleton) {
+		err = EADDRINUSE;
+		goto out;
+	}
+
 	/* Decode parameters */
 	acc->ptime = 20;
 	err |= sip_params_decode(acc, &acc->laddr);
@@ -625,6 +633,7 @@ int account_alloc(struct account **accp, const char *sipaddr)
 	err |= video_codecs_decode(acc, &acc->laddr.params);
 	err |= media_decode(acc, &acc->laddr.params);
 	err |= param_bool(&acc->catchall, &acc->laddr.params, "catchall");
+	err |= param_bool(&acc->singleton, &acc->laddr.params, "singleton");
 	if (err)
 		goto out;
 

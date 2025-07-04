@@ -99,6 +99,7 @@ struct account {
 	bool rtcp_mux;               /**< RTCP multiplexing                  */
 	bool pinhole;                /**< NAT pinhole flag                   */
 	bool catchall;               /**< Catch all inbound requests         */
+	bool singleton;              /**< Only one instance permitted        */
 };
 
 
