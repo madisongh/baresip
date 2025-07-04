@@ -227,6 +227,33 @@ int test_ua_alloc(void)
 }
 
 
+int test_ua_singleton(void)
+{
+	struct ua *ua, *ua2 = NULL;
+	int err = 0;
+
+	/* make sure we dont have these UAs already */
+	ASSERT_TRUE(NULL == uag_find_aor("sip:user@test.invalid"));
+	ASSERT_TRUE(NULL == uag_find_aor("sip:seconduser@test.invalid"));
+
+	err = ua_alloc(&ua, "Foo <sip:user@test.invalid>;regint=0;singleton=yes");
+	if (err)
+		return err;
+	ASSERT_TRUE(NULL != ua);
+	TEST_STRCMP("user", 4, ua_cuser(ua), str_len(ua_cuser(ua)))
+	ASSERT_TRUE(ua_alloc(&ua2, "Foo <sip:user@test.invalid>;regint=0;singleton=yes") == EADDRINUSE);
+	err = ua_alloc(&ua2, "Foo2 <sip:seconduser@test.invalid>;regint=0;singleton=yes");
+	ASSERT_EQ(0, err);
+	ASSERT_TRUE(NULL != ua2);
+	TEST_STRCMP("seconduser", 10, ua_cuser(ua2), str_len(ua_cuser(ua2)))
+
+ out:
+	mem_deref(ua);
+	mem_deref(ua2);
+	return err;
+}
+
+
 int test_uag_find_param(void)
 {
 	struct ua *ua1 = NULL, *ua2 = NULL;

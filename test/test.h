@@ -246,6 +246,7 @@ int test_network(void);
 int test_play(void);
 int test_stunuri(void);
 int test_ua_alloc(void);
+int test_ua_singleton(void);
 int test_ua_options(void);
 int test_ua_refer(void);
 int test_ua_register(void);

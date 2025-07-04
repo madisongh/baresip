@@ -72,6 +72,7 @@ static const struct test tests[] = {
 	TEST(test_play),
 	TEST(test_stunuri),
 	TEST(test_ua_alloc),
+	TEST(test_ua_singleton),
 	TEST(test_ua_options),
 	TEST(test_ua_refer),
 	TEST(test_ua_register),
