@@ -62,6 +62,7 @@ struct call {
 	bool on_hold;             /**< True if call is on hold (local)      */
 	bool ans_queued;          /**< True if an (auto) answer is queued   */
 	bool progr_queued;        /**< True if a progress response is queued*/
+	bool have_vid_display;    /**< True if video display detected       */
 	struct mnat_sess *mnats;  /**< Media NAT session                    */
 	bool mnat_wait;           /**< Waiting for MNAT to establish        */
 	struct menc_sess *mencs;  /**< Media encryption session state       */
@@ -853,8 +854,9 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
 	call->eh     = eh;
 	call->arg    = arg;
 	call->af     = prm->af;
+	call->have_vid_display = vidisp_find(baresip_vidispl(), NULL) != NULL;
 	call->estadir = SDP_SENDRECV;
-	call->estvdir = SDP_SENDRECV;
+	call->estvdir = (call->have_vid_display ? SDP_SENDRECV : SDP_SENDONLY);
 	call->use_rtp = prm->use_rtp;
 	call_decode_sip_autoanswer(call, msg);
 	call_decode_diverter(call, msg);
@@ -3156,7 +3158,7 @@ void call_set_mdir(struct call *call, enum sdp_dir a, enum sdp_dir v)
 	stream_set_ldir(audio_strm(call_audio(call)), a);
 
 	if (video_strm(call_video(call))) {
-		if (vidisp_find(baresip_vidispl(), NULL) == NULL)
+		if (!call->have_vid_display)
 			stream_set_ldir(video_strm(
 				call_video(call)), v & SDP_SENDONLY);
 		else
