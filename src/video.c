@@ -866,9 +866,12 @@ static int stream_pt_handler(uint8_t pt, struct mbuf *mb, void *arg)
 	if (v->vrx.pt_rx == (uint8_t)-1 || v->vrx.pt_rx == pt)
 		return 0;
 
-	if (v->vrx.pt_rx != -1)
+	if (v->vrx.pt_rx != -1) {
 		info("Video decoder changed payload %d -> %u\n",
 		     v->vrx.pt_rx, pt);
+		/* preserve direction to prevent re-invite */
+		stream_set_ldir(v->strm, sdp_media_dir(stream_sdpmedia(v->strm)));
+	}
 
 	lc = sdp_media_lformat(stream_sdpmedia(v->strm), pt);
 	if (!lc)

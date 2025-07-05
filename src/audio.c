@@ -624,8 +624,11 @@ static int stream_pt_handler(uint8_t pt, struct mbuf *mb, void *arg)
 	if (ptc == (int) pt)
 		return 0;
 
-	if (ptc != -1)
+	if (ptc != -1) {
 		info("Audio decoder changed payload %d -> %u\n", ptc, pt);
+		/* preserve direction to prevent re-invite */
+		stream_set_ldir(a->strm, sdp_media_dir(stream_sdpmedia(a->strm)));
+	}
 
 	return audio_decoder_set(a, lc->data, lc->pt, lc->params);
 }
